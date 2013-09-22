@@ -1,0 +1,74 @@
+
+var defaultRules = [
+  {from:'the cloud', to:'my butt'},
+  {from:'cloud', to:'butt'}
+]
+
+
+function parseRules() {
+  var ruleElements = document.querySelector('#rules').children
+  var status = document.getElementById("status")
+  var rules = []
+
+  for (var i = 0; i < ruleElements.length; i++) {
+    rules.push({
+      from:   ruleElements[i].querySelector('input.from').value,
+      to:     ruleElements[i].querySelector('input.to').value
+    })
+  }
+  return rules
+}
+
+function addRule() {
+  render(parseRules().concat({to:'', from:''}))
+}
+
+function render(rules) {
+  var html = ''
+  var rulesElement = document.querySelector('#rules')
+
+  for (var i = 0; i < rules.length; i++) {
+    html += '<li class="rule">' +
+      '<label>Replace</label> <input class="from" placeholder="Cloud" type="text" value="'+rules[i].from+'"/>' +
+      '<label>with</label> <input class="to" placeholder="Butt" type="text" value="'+rules[i].to+'"/>' +
+      '<button class="remove">x</button>' +
+    '</li>'
+  }
+  rulesElement.innerHTML = html
+}
+
+function removeRule(e) {
+  if (e.target.className !== 'remove') return
+  e.target.parentNode.remove()
+}
+
+function resetRules() {
+  render(defaultRules)
+  saveOptions()
+}
+
+// Save options to storage
+function saveOptions() {
+  chrome.storage.sync.set({rules: parseRules()}, function() {
+    status.innerHTML = "Options Saved."
+    setTimeout(function() {
+      status.innerHTML = ""
+    }, 1000)
+  })
+}
+
+// Get options from storage
+function restoreOptions() {
+  chrome.storage.sync.get('rules', function(data) {
+    render(data.rules || defaultRules)
+  })
+}
+
+// Event Listeners
+document.addEventListener('DOMContentLoaded', restoreOptions)
+document.querySelector('#reset').addEventListener('click', resetRules)
+document.querySelector('#save').addEventListener('click', saveOptions)
+document.querySelector('#add').addEventListener('click', addRule)
+document.querySelector('#rules').addEventListener('click', removeRule)
+
+
