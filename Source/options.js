@@ -18,8 +18,11 @@ function parseRules(includeRegExp) {
     if (!rule.to || !rule.from) continue
     rules.push(includeRegExp ? ruleToRegExp(rule) : rule)
   }
-  console.log(rules)
   return rules
+}
+
+function escapeRegExp(str) {
+  return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\\$&");
 }
 
 function ruleToRegExp(rule) {
@@ -35,7 +38,7 @@ function ruleToRegExp(rule) {
   }
 
   rule.replace = {
-    from: new RegExp(rule.from, 'gi'),
+    from: escapeRegExp(rule.from),
     to: {
       lc: lc,
       sc: sc,

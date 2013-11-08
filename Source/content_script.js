@@ -10,8 +10,6 @@ chrome.storage.sync.get('rules', function(data) {
 })
 
 function walk(node, rules) {
-  // I stole this function from here:
-  // http://is.gd/mwZp7E
   
   var child, next;
 
@@ -48,7 +46,9 @@ function handleText(textNode, rules) {
   for (var r = 0; r < rules.length; r++) {
     rule = rules[r]
     if (!rule) continue
+    if (typeof rule.replace.from === 'string') rule.replace.from = new RegExp(rule.replace.from, 'gi')
     match = v.match(rule.replace.from)
+
     if (!match) continue
     for (m = 0; m < match.length; m++) {
       matchCase = findCase(match[m])
