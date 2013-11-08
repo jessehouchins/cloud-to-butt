@@ -6,7 +6,7 @@ var defaultRules = [
 
 chrome.storage.sync.get('rules', function(data) {
   var rules = data.rules || defaultRules
-  walk(document.body, parseRules(rules))
+  walk(document.body, rules)
 })
 
 function walk(node, rules) {
@@ -48,43 +48,13 @@ function handleText(textNode, rules) {
   for (var r = 0; r < rules.length; r++) {
     rule = rules[r]
     if (!rule) continue
-    match = v.match(rule.from)
+    match = v.match(rule.replace.from)
     if (!match) continue
     for (m = 0; m < match.length; m++) {
       matchCase = findCase(match[m])
-      v = v.replace(match[m], rule.to[matchCase])
+      v = v.replace(match[m], rule.replace.to[matchCase])
     }
   }
 
   textNode.nodeValue = v;
 }
-
-// convert `from` ro regex and `to` to case hash -- eventualy should do this from options for performance
-function parseRules(rules) {
-  var r, rule, lc, sc, tc, words, word
-  for (r = 0; r < rules.length; r++) {
-    rule = rules[r]
-    if (!rule.from || !rule.to) {
-      rules[r] = false
-      continue
-    }
-
-    lc = rule.to.toLowerCase()
-    sc = lc.substring(0,1).toUpperCase() + lc.substring(1)
-    tc = []
-    words = lc.split(' ')
-    while (words.length) {
-      word = words.shift()
-      tc.push(word.substring(0,1).toUpperCase() + word.substring(1))
-    }
-
-    rule.from = new RegExp(rule.from, 'gi')
-    rule.to = {
-      lc: lc,
-      sc: sc,
-      tc: tc.join(' ')
-    }
-  }
-  return rules
-}
-

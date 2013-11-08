@@ -5,18 +5,44 @@ var defaultRules = [
 ]
 
 
-function parseRules() {
+function parseRules(includeRegExp) {
   var ruleElements = document.querySelector('#rules').children
   var status = document.getElementById("status")
-  var rules = []
+  var rule, rules = []
 
   for (var i = 0; i < ruleElements.length; i++) {
-    rules.push({
+    rule = {
       from:   ruleElements[i].querySelector('input.from').value,
       to:     ruleElements[i].querySelector('input.to').value
-    })
+    }
+    if (!rule.to || !rule.from) continue
+    rules.push(includeRegExp ? ruleToRegExp(rule) : rule)
   }
+  console.log(rules)
   return rules
+}
+
+function ruleToRegExp(rule) {
+  var lc, sc, tc, words, word
+
+  lc = rule.to.toLowerCase()
+  sc = lc.substring(0,1).toUpperCase() + lc.substring(1)
+  tc = []
+  words = lc.split(' ')
+  while (words.length) {
+    word = words.shift()
+    tc.push(word.substring(0,1).toUpperCase() + word.substring(1))
+  }
+
+  rule.replace = {
+    from: new RegExp(rule.from, 'gi'),
+    to: {
+      lc: lc,
+      sc: sc,
+      tc: tc.join(' ')
+    }
+  }
+  return rule
 }
 
 function addRule() {
@@ -49,7 +75,8 @@ function resetRules() {
 
 // Save options to storage
 function saveOptions() {
-  chrome.storage.sync.set({rules: parseRules()}, function() {
+  var status = document.getElementById('status')
+  chrome.storage.sync.set({rules: parseRules(true)}, function() {
     status.innerHTML = "Options Saved."
     setTimeout(function() {
       status.innerHTML = ""
